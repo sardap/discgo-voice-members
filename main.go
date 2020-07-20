@@ -26,7 +26,7 @@ func GetUsers(guildID, channelID string) []string {
 	}
 	gInfo := gInfoTmp.(*guildInfo)
 	result := make([]string, 0)
-	gInfo.usersLoc.Range(func(channel, user interface{}) bool {
+	gInfo.usersLoc.Range(func(user, channel interface{}) bool {
 		if channel.(string) == channelID {
 			result = append(result, user.(string))
 		}
