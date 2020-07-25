@@ -12,10 +12,18 @@ type guildInfo struct {
 	usersLoc sync.Map
 }
 
-var guildInfos sync.Map
-var stLock = sync.RWMutex{}
+var (
+	guildInfos sync.Map
+	stLock     = &sync.RWMutex{}
+	trackBots  = false
+)
 
 func init() {
+}
+
+//SetTrackBots sets if bots should be tracked in channels
+func SetTrackBots(val bool) {
+	trackBots = val
 }
 
 //GetUsers Returns a list of users in a channel
@@ -39,6 +47,16 @@ func GetUsers(guildID, channelID string) []string {
 //UserVoiceTrackerHandler this is the handler which must be added as a handler to discrodgo it will update the
 // Staes whenever a user moves between channels
 func UserVoiceTrackerHandler(s *discordgo.Session, v *discordgo.VoiceStateUpdate) {
+	if !trackBots {
+		usr, err := s.User(v.UserID)
+		if err != nil {
+			return
+		}
+		if usr.Bot {
+			return
+		}
+	}
+
 	gInfoTmp, _ := guildInfos.LoadOrStore(v.GuildID, &guildInfo{})
 	gInfo := gInfoTmp.(*guildInfo)
 	//Left Channel
